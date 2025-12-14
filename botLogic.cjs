@@ -1,4 +1,3 @@
-// import { createBot } from './botLogic.js' assert { type: 'module' };
 // botLogic.js
 import "dotenv/config";
 import TelegramBot from "node-telegram-bot-api";
@@ -494,5 +493,4 @@ export function createBot() {
 
   return bot;
 }
-// CJS compatibility export (Vercel only)
-globalThis.createBotCJS = createBot;
+// module.exports = { createBot };

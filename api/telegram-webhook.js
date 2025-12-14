@@ -1,17 +1,14 @@
 // api/telegram-webhook.js
-require('dotenv').config();  // ← CHANGE: CommonJS for Vercel
-const { createBot } = require('../botLogic.js');  // ← CHANGE: CommonJS
+require('dotenv').config();
+const { createBot } = require('../botLogic.cjs');  // .cjs extension
 
-const bot = createBot(); // same logic, no polling
+const bot = createBot();
 
-// CommonJS export for Vercel (not ES module)
-module.exports = async (req, res) => {  // ← CHANGE: module.exports
+module.exports = async (req, res) => {
   if (req.method !== "POST") {
     res.status(200).send("OK");
     return;
   }
-
-  const update = req.body;
-  await bot.processUpdate(update);  // ← ADD: await
+  await bot.processUpdate(req.body);
   res.status(200).send("OK");
 };
