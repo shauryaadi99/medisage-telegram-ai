@@ -493,3 +493,4 @@ export function createBot() {
 
   return bot;
 }
+module.exports = { createBot };

@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "build": "echo 'No build needed'",
+    "start": "node api/index.js"
+  },
+  "engines": {
+    "node": "18.x"
   },
   "type": "module",
   "keywords": [],
