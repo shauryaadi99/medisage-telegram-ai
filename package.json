@@ -12,13 +12,11 @@
     "dotenv": "^16.4.5",
     "node-fetch": "^3.3.2",
     "node-telegram-bot-api": "^0.67.0",
-
     "@langchain/core": "^0.3.14",
     "@langchain/community": "^0.3.8",
-    "@langchain/groq": "^0.0.10",
+    "@langchain/groq": "^1.0.2",
     "@langchain/pinecone": "^0.0.6",
     "@langchain/textsplitters": "^0.0.3",
-
     "@pinecone-database/pinecone": "^3.0.0"
   }
 }
