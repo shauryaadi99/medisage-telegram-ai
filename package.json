@@ -10,7 +10,6 @@
     "vercel-build": "echo 'No build needed'"
   },
   "dependencies": {
-    "@langchain/core": "^0.3.35",
     "@langchain/google-genai": "^0.1.8",
     "@langchain/groq": "^0.1.8",
     "@langchain/pinecone": "^0.3.0",
