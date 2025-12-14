@@ -32,3 +32,7 @@ coverage/
 
 # OS
 Thumbs.db
+# test scripts (local only)
+test-Text.js
+testVision.js
+medical-book.pdf
