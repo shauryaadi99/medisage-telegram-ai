@@ -1,0 +1,20 @@
+version: '3.8'
+services:
+  chroma:
+    image: chromadb/chroma:latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./chroma-data:/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"  # Ollama API
+    volumes:
+      - ./ollama-data:/root/.ollama  # Persist models
+    restart: unless-stopped
+    command: serve
