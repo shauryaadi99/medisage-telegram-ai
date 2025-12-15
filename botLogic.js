@@ -3,6 +3,8 @@
 import "dotenv/config";
 import TelegramBot from "node-telegram-bot-api";
 import { describeImageEducational } from "./vision.js";
+import { HumanMessage } from "@langchain/core/messages";
+
 import path from "path";
 import fetch from "node-fetch";
 import fs from "fs";
@@ -128,17 +130,9 @@ MANDATORY FINAL DISCLAIMER (always include, even if repeating):
   let coreAnswer;
 
   try {
-    const res = await llm.invoke([
-      {
-        role: "user",
-        content: prompt,
-      },
-    ]);
+    const res = await llm.invoke([new HumanMessage(prompt)]);
 
-    coreAnswer =
-      typeof res === "string"
-        ? res
-        : res?.content || res?.message?.content || "";
+    coreAnswer = typeof res === "string" ? res : res?.content || "";
 
     if (!coreAnswer) {
       throw new Error("LLM returned empty response");
@@ -148,8 +142,10 @@ MANDATORY FINAL DISCLAIMER (always include, even if repeating):
       message: err.message,
       stack: err.stack,
     });
-    throw err; // important: propagate to Telegram handler
+    throw err;
   }
+  console.log("✅ RAG COMPLETE"); // ← 1 LINE
+  
 
   const signature =
     `\n\n————————————\n` +
