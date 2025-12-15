@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "functions": {
+    "api/index.js": {
+      "runtime": "nodejs24.x",
+      "maxDuration": 30
+    }
+  },
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/api/index.js"
+    }
+  ],
+  "installCommand": "npm install --legacy-peer-deps --force",
+  "buildCommand": "echo 'No build needed'"
+}
