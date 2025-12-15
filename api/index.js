@@ -9,16 +9,16 @@ export default async function handler(req, res) {
   try {
     const update = req.body;
     
-    // ✅ YOUR createBot() handles EVERYTHING!
-    if (update.message) {
-      // Trigger YOUR botLogic.js message handlers
-      bot.on('message', async (msg) => {
-        // YOUR handlers already work: /start, /quickconsult, RAG, etc.
-      });
-      
-      // Simulate message event for YOUR handlers
-      bot.emit('message', update.message);
+    // ✅ NULL CHECK FIRST!
+    if (!update || !update.message) {
+      console.log('📥 No message in update:', update);
+      return res.status(200).json({ status: 'ok' });
     }
+    
+    console.log('📥 Message received:', update.message.text);
+    
+    // ✅ YOUR createBot() handlers triggered!
+    bot.emit('message', update.message);
     
     res.status(200).json({ status: 'ok' });
   } catch (e) {
