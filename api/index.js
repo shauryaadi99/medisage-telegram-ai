@@ -38,8 +38,8 @@ export default async function handler(req, res) {
 
 Empowered by advanced medical references + vision AI
 
-🔹 \`/quickconsult\`     Instant expert answers
-🔹 \`/healthreport\`     Structured clinical report  
+🔹 /quickconsult     Instant expert answers
+🔹 /healthreport     Structured clinical report  
 🔹 📸 *Medical images*  Visual symptom analysis
 
 *Professional. Educational. Always safe.*
@@ -48,6 +48,7 @@ Empowered by advanced medical references + vision AI
 ————————————`,
         { parse_mode: "Markdown" }
       );
+
       chatState.delete(chatId);
       return res.status(200).json({ status: "ok" });
     }
@@ -204,9 +205,9 @@ Ask anything about symptoms, conditions, or concerns:
           `✅ *Report Complete!* 
 Your personalized assessment has been delivered 📎
 
-Ready for another question? Use \`/quickconsult\`
-To start a fresh guided report, use \`/healthreport\`
-To see all options again, use \`/start\``,
+Ready for another question? Use /quickconsult
+To start a fresh guided report, use /healthreport
+To see all options again, use /start`,
           { parse_mode: "Markdown" }
         );
 
