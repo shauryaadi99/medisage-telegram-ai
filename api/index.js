@@ -7,9 +7,15 @@ const bot = createBot();
 
 export default async function handler(req, res) {
   try {
-    // ✅ PASS RAW req.body DIRECTLY (botLogic.js handles it!)
-    console.log('📥 Raw webhook:', req.body.update_id);
-    await bot.processUpdate(req.body);  // ← RAW!
+    // MANUAL MESSAGE HANDLING (bypasses processUpdate)
+    const update = req.body;
+    console.log('📥 Update ID:', update?.update_id);
+    
+    if (update?.message) {
+      const msg = update.message;  // ← EXTRACT msg for botLogic.js
+      await bot.emit('message', msg);
+    }
+    
     res.status(200).json({ status: 'ok' });
   } catch (e) {
     console.error('💥 Error:', e.message);
