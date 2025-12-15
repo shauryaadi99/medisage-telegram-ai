@@ -129,22 +129,36 @@ MANDATORY FINAL DISCLAIMER (always include, even if repeating):
   let coreAnswer;
 
   try {
-    const res = await llm.invoke(prompt); // ← STRING, not array!
+    const groqResponse = await fetch(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "llama-3.1-8b-instant",
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.2,
+          stream: false,
+        }),
+      }
+    );
 
-    coreAnswer =
-      typeof res === "string"
-        ? res
-        : res?.content || res?.message?.content || "";
-
-    if (!coreAnswer) {
-      throw new Error("LLM returned empty response");
+    if (!groqResponse.ok) {
+      throw new Error(`Groq API error: ${groqResponse.status}`);
     }
+
+    const data = await groqResponse.json();
+    coreAnswer = data.choices[0].message.content; // ✅ Already a string!
   } catch (err) {
-    console.error("💥 RAG LLM Error:", {
-      message: err.message,
-      stack: err.stack,
-    });
-    throw err; // important: propagate to Telegram handler
+    console.error("💥 Groq API Error:", err.message);
+    throw err;
+  }
+
+  if (!coreAnswer) {
+    throw new Error("Groq returned empty response");
   }
 
   const signature =
