@@ -40,13 +40,18 @@ const pc = new Pinecone({
   apiKey: process.env.PINECONE_API_KEY,
 });
 
-const pineconeIndex = pc.index(process.env.PINECONE_INDEX);
+// ✅ FULLY ASYNC Pinecone init
+const pineconeIndexPromise = pc.index(process.env.PINECONE_INDEX);
 const PINECONE_NAMESPACE = "medical_book_full";
 
-const vectorStorePromise = PineconeStore.fromExistingIndex(embeddings, {
-  pineconeIndex,
-  namespace: PINECONE_NAMESPACE,
-});
+const vectorStorePromise = (async () => {
+  const pineconeIndex = await pineconeIndexPromise;
+  return PineconeStore.fromExistingIndex(embeddings, {
+    pineconeIndex,
+    namespace: PINECONE_NAMESPACE,
+  });
+})();
+
 const retrieverPromise = (async () => {
   const vectorStore = await vectorStorePromise;
   return vectorStore.asRetriever({ k: 5 });
