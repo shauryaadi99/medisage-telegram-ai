@@ -125,8 +125,31 @@ MANDATORY FINAL DISCLAIMER (always include, even if repeating):
 "I am an AI medical assistant using reference materials. This is not a diagnosis or personal medical advice. Do not rely on this alone — always consult a licensed physician for decisions about your health."
 `;
 
-  const res = await llm.invoke(prompt);
-  const coreAnswer = typeof res === "string" ? res : res.content;
+  let coreAnswer;
+
+  try {
+    const res = await llm.invoke([
+      {
+        role: "user",
+        content: prompt,
+      },
+    ]);
+
+    coreAnswer =
+      typeof res === "string"
+        ? res
+        : res?.content || res?.message?.content || "";
+
+    if (!coreAnswer) {
+      throw new Error("LLM returned empty response");
+    }
+  } catch (err) {
+    console.error("💥 RAG LLM Error:", {
+      message: err.message,
+      stack: err.stack,
+    });
+    throw err; // important: propagate to Telegram handler
+  }
 
   const signature =
     `\n\n————————————\n` +
@@ -519,6 +542,4 @@ globalThis.createBotCJS = createBot;
 export { answerMedicalQuery };
 export { appendActions };
 export { handleGreetings };
-export { buildReportText, reportTextToStream } from './reportFile.js';
-
-
+export { buildReportText, reportTextToStream } from "./reportFile.js";
