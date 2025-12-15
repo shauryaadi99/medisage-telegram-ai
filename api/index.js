@@ -7,13 +7,12 @@ const bot = createBot();
 
 export default async function handler(req, res) {
   try {
-    // MANUAL MESSAGE HANDLING (bypasses processUpdate)
     const update = req.body;
     console.log('📥 Update ID:', update?.update_id);
     
     if (update?.message) {
-      const msg = update.message;  // ← EXTRACT msg for botLogic.js
-      await bot.emit('message', msg);
+      // ✅ CORRECT: Pass RAW message object
+      await bot.handleMessage(update.message);
     }
     
     res.status(200).json({ status: 'ok' });
