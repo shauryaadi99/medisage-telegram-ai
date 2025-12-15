@@ -3,26 +3,22 @@ dotenv.config();
 
 import { createBot } from '../botLogic.js';
 
-const bot = createBot();
+const bot = createBot();  // Your perfect bot!
 
 export default async function handler(req, res) {
   try {
     const update = req.body;
     
-    // ✅ NULL CHECK FIRST!
-    if (!update || !update.message) {
-      console.log('📥 No message in update:', update);
-      return res.status(200).json({ status: 'ok' });
-    }
+    if (!update?.message) return res.status(200).json({ status: 'ok' });
     
-    console.log('📥 Message received:', update.message.text);
+    console.log('📥', update.message.text);
     
-    // ✅ YOUR createBot() handlers triggered!
-    bot.emit('message', update.message);
+    // ✅ YOUR createBot() handles EVERYTHING!
+    bot.emit('message', update.message);  // Triggers YOUR onText/on("message")
     
     res.status(200).json({ status: 'ok' });
   } catch (e) {
-    console.error('💥 Error:', e.message);
+    console.error('💥', e.message);
     res.status(500).json({ error: 'Bot failed', details: e.message });
   }
 }

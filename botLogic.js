@@ -230,11 +230,10 @@ function handleGreetings(text) {
   return null; // not a greeting
 }
 
+const chatState = new Map(); // chatId -> { mode, step, form, lastReport }
 export function createBot() {
   // note: polling: false – runner will decide
   const bot = new TelegramBot(token, { polling: false });
-
-  const chatState = new Map(); // chatId -> { mode, step, form, lastReport }
 
   /* /start COMMAND */
 
@@ -514,3 +513,4 @@ export function createBot() {
 }
 // CJS compatibility export (Vercel only)
 globalThis.createBotCJS = createBot;
+export { answerMedicalQuery, appendActions };
