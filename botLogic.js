@@ -60,8 +60,21 @@ const retrieverPromise = (async () => {
 /* -------------------- CORE RAG FUNCTION -------------------- */
 
 async function answerMedicalQuery(query) {
+  console.log("🔍 RAG START:", query); // ← 1 LINE
+
   const retriever = await retrieverPromise;
+  console.log("✅ Retriever OK"); // ← 1 LINE
+
+  // const retrievedDocs = await retriever.invoke(query);
+
+  // if (!retrievedDocs.length) {
+  //   console.log('❌ NO DOCS');         // ← 1 LINE
+  //   return "❌ No info found...";
+  // }
+
+  // const retriever = await retrieverPromise;
   const retrievedDocs = await retriever.invoke(query);
+  console.log(`📚 Docs: ${retrievedDocs.length}`); // ← 1 LINE
 
   if (!retrievedDocs.length) {
     return (
