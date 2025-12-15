@@ -1,6 +1,10 @@
 import dotenv from "dotenv";
 dotenv.config();
-import { describeImageEducational } from "../vision.js"; // ADD THIS
+// import { describeImageEducational } from "../vision.js"; // ADD THIS
+import { describeImageEducational } from '../vision.js';  // ← ADD THIS
+import fs from 'fs';  // ← ADD THIS  
+import fetch from 'node-fetch';  // ← ADD THIS
+import path from 'path';  // ← ADD THIS (for /tmp paths)
 
 import TelegramBot from "node-telegram-bot-api";
 import {
@@ -65,41 +69,55 @@ export default async function handler(req, res) {
       return res.status(200).json({ status: "ok" });
     }
 
-    // 4. Greetings
-    const greeting = handleGreetings(text);
-    if (greeting) {
-      await bot.sendMessage(chatId, greeting, { parse_mode: "Markdown" });
-      return res.status(200).json({ status: "ok" });
+  // 4. Greetings
+const greeting = handleGreetings(text);
+if (greeting) {
+  await bot.sendMessage(chatId, greeting, { parse_mode: "Markdown" });
+  return res.status(200).json({ status: "ok" });
+}
+
+// 🔥 5. PHOTO HANDLER (CORRECT SINGLE BLOCK)
+if (msg.photo) {
+  console.log('🖼️ PHOTO RECEIVED');
+  try {
+    const photo = msg.photo[msg.photo.length - 1];
+    const fileId = photo.file_id;
+    const file = await bot.getFile(fileId);
+    const fileUrl = `https://api.telegram.org/file/bot${token}/${file.file_path}`;
+    
+    const localPath = `/tmp/photo-${chatId}.jpg`;
+    const res = await fetch(fileUrl);
+    const arrayBuffer = await res.arrayBuffer();
+    fs.writeFileSync(localPath, Buffer.from(arrayBuffer));
+    
+    await bot.sendMessage(chatId, "🖼️ Analyzing medical image...");
+    
+    const description = await describeImageEducational(localPath);
+    fs.unlinkSync(localPath);
+    
+    if (!description || description.includes("unavailable")) {
+      await bot.sendMessage(chatId, "⚠️ Could not analyze image. Try text.");
+      return res.status(200).json({ status: 'ok' });
     }
+    
+    const query = "Image-based medical question. Image shows: " + description;
+    const answer = await answerMedicalQuery(query);
+    let reply = String(answer);
+    if (reply.length > 4000) reply = reply.slice(0, 3950) + "\n\n…truncated…";
+    reply = appendActions(reply);
+    
+    await bot.sendMessage(chatId, reply, { parse_mode: "Markdown" });
+  } catch (error) {
+    console.error('💥 Photo error:', error.message);
+    await bot.sendMessage(chatId, "⚠️ Image processing failed. Try text.");
+  }
+  return res.status(200).json({ status: 'ok' });
+}
 
-    // 5. PHOTO HANDLER (MISSING!)
-    if (msg.photo) {
-      console.log("🖼️ PHOTO RECEIVED");
-      try {
-        const photo = msg.photo[msg.photo.length - 1];
-        const fileId = photo.file_id;
-        const file = await bot.getFile(fileId);
-        const fileUrl = `https://api.telegram.org/file/bot${token}/${file.file_path}`;
+// 6. Health Report Flow (next)...
 
-        // Download to temp file
-        const localPath = `/tmp/photo-${chatId}.jpg`;
-        const res = await fetch(fileUrl);
-        const arrayBuffer = await res.arrayBuffer();
-        fs.writeFileSync(localPath, Buffer.from(arrayBuffer));
 
-        await bot.sendMessage(chatId, "🖼️ Analyzing medical image...");
 
-        // YOUR VISION MAGIC
-        const description = await describeImageEducational(localPath);
-        fs.unlinkSync(localPath);
-
-        if (!description) {
-          await bot.sendMessage(
-            chatId,
-            "⚠️ Could not analyze image. Describe in text."
-          );
-          return res.status(200).json({ status: "ok" });
-        }
 
         // RAG with image description
         const query =
