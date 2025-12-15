@@ -516,42 +516,42 @@ globalThis.createBotCJS = createBot;
 export { answerMedicalQuery, appendActions };
 
 // ✅ WEBHOOK DIRECT HANDLER (uses YOUR exact code)
-export async function handleWebhookUpdate(msg, botInstance) {
-  const chatId = msg.chat.id;
-  const text = msg.text;
+// export async function handleWebhookUpdate(msg, botInstance) {
+//   const chatId = msg.chat.id;
+//   const text = msg.text;
   
-  if (!text) return;
+//   if (!text) return;
   
-  console.log('🤖 HANDLER:', text);
+//   console.log('🤖 HANDLER:', text);
   
-  // YOUR EXACT /start handler
-  if (/\/start/.test(text)) {
-    await botInstance.sendMessage(chatId, 
-      "🩺 *Medisage AI Doctor* — Your Smart Medical Companion\n\n" +
-      "1️⃣ */quickconsult* – Quick question, fast educational answer.\n" +
-      "2️⃣ */healthreport* – Full guided health report.\n\n" +
-      "👨‍💻 *Created by Shaurya Aditya Verma*",
-      { parse_mode: "Markdown" }
-    );
-    return;
-  }
+//   // YOUR EXACT /start handler
+//   if (/\/start/.test(text)) {
+//     await botInstance.sendMessage(chatId, 
+//       "🩺 *Medisage AI Doctor* — Your Smart Medical Companion\n\n" +
+//       "1️⃣ */quickconsult* – Quick question, fast educational answer.\n" +
+//       "2️⃣ */healthreport* – Full guided health report.\n\n" +
+//       "👨‍💻 *Created by Shaurya Aditya Verma*",
+//       { parse_mode: "Markdown" }
+//     );
+//     return;
+//   }
   
-  // YOUR EXACT /quickconsult handler  
-  if (/\/quickconsult/.test(text)) {
-    chatState.set(chatId, { mode: "quick" });  // YOUR state!
-    await botInstance.sendMessage(chatId, 
-      "🩺 *Quick Consult*\n\nSend your health question.\n\nExamples:\n• `mouth ulcer`\n• `headache 2 days`",
-      { parse_mode: "Markdown" }
-    );
-    return;
-  }
+//   // YOUR EXACT /quickconsult handler  
+//   if (/\/quickconsult/.test(text)) {
+//     chatState.set(chatId, { mode: "quick" });  // YOUR state!
+//     await botInstance.sendMessage(chatId, 
+//       "🩺 *Quick Consult*\n\nSend your health question.\n\nExamples:\n• `mouth ulcer`\n• `headache 2 days`",
+//       { parse_mode: "Markdown" }
+//     );
+//     return;
+//   }
   
-  // YOUR EXACT RAG handler
-  await botInstance.sendMessage(chatId, "*🔍 Analyzing...*", { parse_mode: "Markdown" });
-  const answer = await answerMedicalQuery(text);
-  const reply = appendActions(answer);
-  await botInstance.sendMessage(chatId, reply, { parse_mode: "Markdown" });
-}
+//   // YOUR EXACT RAG handler
+//   await botInstance.sendMessage(chatId, "*🔍 Analyzing...*", { parse_mode: "Markdown" });
+//   const answer = await answerMedicalQuery(text);
+//   const reply = appendActions(answer);
+//   await botInstance.sendMessage(chatId, reply, { parse_mode: "Markdown" });
+// }
 
-// ✅ GLOBAL chatState (move BEFORE createBot)
-// const chatState = new Map();
+// ✅ FOR FULL WEBHOOK
+export { answerMedicalQuery, appendActions, handleGreetings, buildReportText, reportTextToStream };

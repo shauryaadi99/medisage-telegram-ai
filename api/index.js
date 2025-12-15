@@ -1,22 +1,136 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { createBot } from '../botLogic.js';
+import TelegramBot from 'node-telegram-bot-api';
+import { answerMedicalQuery, appendActions, handleGreetings, buildReportText, reportTextToStream } from '../botLogic.js';
 
-let bot; // Single instance!
-
-// Initialize ONCE
-if (!bot) {
-  bot = createBot();
-}
+// GLOBAL STATE (shared across Vercel invocations)
+const chatState = new Map();
+const token = process.env.TELEGRAM_BOT_TOKEN;
+const bot = new TelegramBot(token, { polling: false });
 
 export default async function handler(req, res) {
   try {
     const update = req.body;
-    console.log('📥', update.message?.text || 'non-text');
+    if (!update?.message) return res.status(200).json({ status: 'ok' });
     
-    // ✅ OFFICIAL node-telegram-bot-api webhook method!
-    await bot.processUpdate(update);
+    const msg = update.message;
+    const chatId = msg.chat.id;
+    const text = msg.text;
+    
+    console.log('📥', text || 'photo');
+    
+    // 1. /start
+    if (text === '/start') {
+      await bot.sendMessage(chatId, 
+        "🩺 *Medisage AI Doctor* — Your Smart Medical Companion\n\n" +
+        "1️⃣ */quickconsult* – Quick question, fast educational answer.\n" +
+        "2️⃣ */healthreport* – Full guided health report with structured output.\n\n" +
+        "You can also send a medical image any time!\n\n" +
+        "👨‍💻 *Created by Shaurya Aditya Verma*",
+        { parse_mode: "Markdown" }
+      );
+      chatState.delete(chatId); // Reset state
+      return res.status(200).json({ status: 'ok' });
+    }
+    
+    // 2. /quickconsult
+    if (text === '/quickconsult') {
+      chatState.set(chatId, { mode: "quick" });
+      await bot.sendMessage(chatId, 
+        "🩺 *Quick Consult*\n\nSend your health question as a normal text message.\n\n" +
+        "Examples:\n• `Is this kind of mouth ulcer serious?`\n• `I have a mild headache for 2 days, should I worry?`",
+        { parse_mode: "Markdown" }
+      );
+      return res.status(200).json({ status: 'ok' });
+    }
+    
+    // 3. /healthreport
+    if (text === '/healthreport') {
+      chatState.set(chatId, { mode: "report", step: "askName", form: {} });
+      await bot.sendMessage(chatId, 
+        "📄 *Guided Health Report*\n\nI'll ask a few questions to create a structured, doctor-style report.\n\nFirst, please tell me your *name*.",
+        { parse_mode: "Markdown" }
+      );
+      return res.status(200).json({ status: 'ok' });
+    }
+    
+    // 4. Greetings
+    const greeting = handleGreetings(text);
+    if (greeting) {
+      await bot.sendMessage(chatId, greeting, { parse_mode: "Markdown" });
+      return res.status(200).json({ status: 'ok' });
+    }
+    
+    // 5. Health Report Flow (YOUR EXACT LOGIC)
+    const state = chatState.get(chatId);
+    if (state?.mode === "report") {
+      const form = state.form;
+      
+      if (state.step === "askName") {
+        form.name = text.trim();
+        state.step = "askAge";
+        chatState.set(chatId, state);
+        await bot.sendMessage(chatId, `Thanks, *${form.name}*.\nNow please tell me your *age* (in years).`, { parse_mode: "Markdown" });
+        return res.status(200).json({ status: 'ok' });
+      }
+      
+      if (state.step === "askAge") {
+        form.age = text.trim();
+        state.step = "askProblem";
+        chatState.set(chatId, state);
+        await bot.sendMessage(chatId, "Got it.\nNow describe your main problem and symptoms in your own words.", { parse_mode: "Markdown" });
+        return res.status(200).json({ status: 'ok' });
+      }
+      
+      if (state.step === "askProblem") {
+        form.problem = text.trim();
+        chatState.delete(chatId);
+        
+        await bot.sendMessage(chatId, "📑 Generating your structured health report...", { parse_mode: "Markdown" });
+        
+        const combinedQuery = `Guided health report for patient.\nName: ${form.name}\nAge: ${form.age}\nMain complaint: ${form.problem}\n\nWrite a structured report with sections: Short Direct Answer, Possible Causes, Typical Symptoms, Evaluation / Tests, Treatment Options, Self-Care and Lifestyle, Red Flags, Final Disclaimer.`;
+        
+        const answer = await answerMedicalQuery(combinedQuery);
+        const rawAnswer = String(answer);
+        const reportText = buildReportText(rawAnswer, { name: form.name, age: form.age });
+        
+        let reply = rawAnswer;
+        if (reply.length > 4000) reply = reply.slice(0, 3950) + "\n\n…report shortened…";
+        reply = appendActions(reply);
+        
+        await bot.sendMessage(chatId, reply, { parse_mode: "Markdown" });
+        
+        // Send report file
+        const reportStream = reportTextToStream(reportText);
+        await bot.sendDocument(chatId, reportStream, {}, {
+          filename: "health-report.txt",
+          contentType: "text/plain",
+        });
+        
+        await bot.sendMessage(chatId, "✅ Your guided health report is complete!\n\nUse /quickconsult for another question.", { parse_mode: "Markdown" });
+        return res.status(200).json({ status: 'ok' });
+      }
+    }
+    
+    // 6. Quick Consult / Default RAG (YOUR MAGIC!)
+    if (!state || state.mode === "quick") {
+      await bot.sendMessage(chatId, "*🔍 Quick Consult*\n_Analyzing your question in the medical reference..._", { parse_mode: "Markdown" });
+      
+      try {
+        const answer = await answerMedicalQuery(text);
+        let reply = String(answer);
+        if (reply.length > 4000) reply = reply.slice(0, 3950) + "\n\n…answer shortened…";
+        reply = appendActions(reply);
+        await bot.sendMessage(chatId, reply, { parse_mode: "Markdown" });
+      } catch (error) {
+        console.error('💥 RAG Error:', error.message);
+        await bot.sendMessage(chatId, 
+          "*⚠️ Temporary error*\n\nSomething went wrong while searching the medical database.\nPlease try again.",
+          { parse_mode: "Markdown" }
+        );
+      }
+    }
     
     res.status(200).json({ status: 'ok' });
   } catch (e) {
