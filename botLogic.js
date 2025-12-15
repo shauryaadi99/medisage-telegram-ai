@@ -514,11 +514,16 @@ export function createBot() {
 // CJS compatibility export (Vercel only)
 globalThis.createBotCJS = createBot;
 // FINAL EXPORTS - ONE TIME ONLY (KEEP THIS)
+// ✅ botLogic.js BOTTOM - RE-EXPORT reportFile.js
 export { 
   answerMedicalQuery, 
   appendActions, 
-  handleGreetings, 
+  handleGreetings 
+} from './botLogic.js'; // self
+
+export { 
   buildReportText, 
   reportTextToStream 
-};
+} from './reportFile.js'; // re-export!
+
 
