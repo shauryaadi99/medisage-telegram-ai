@@ -515,15 +515,10 @@ export function createBot() {
 globalThis.createBotCJS = createBot;
 // FINAL EXPORTS - ONE TIME ONLY (KEEP THIS)
 // ✅ botLogic.js BOTTOM - RE-EXPORT reportFile.js
-export { 
-  answerMedicalQuery, 
-  appendActions, 
-  handleGreetings 
-} from './botLogic.js'; // self
-
-export { 
-  buildReportText, 
-  reportTextToStream 
-} from './reportFile.js'; // re-export!
+// SINGLE CORRECT EXPORT BLOCK
+export { answerMedicalQuery };
+export { appendActions };
+export { handleGreetings };
+export { buildReportText, reportTextToStream } from './reportFile.js';
 
 
