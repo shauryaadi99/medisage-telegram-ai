@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { createBot } = require('../botLogic.js');
+const { createBot } = require('../botLogic.cjs');
 
 const bot = createBot();
 

@@ -494,3 +494,7 @@ export function createBot() {
   return bot;
 }
 // module.exports = { createBot };
+// CJS export for Vercel webhook
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { createBot };
+}
