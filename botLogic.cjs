@@ -1,19 +1,18 @@
-// botLogic.js
-import "dotenv/config";
-import TelegramBot from "node-telegram-bot-api";
-import { describeImageEducational } from "./vision.js";
-import path from "path";
-import fetch from "node-fetch";
-import fs from "fs";
-import { buildReportText, reportTextToStream } from "./reportFile.js";
+// botLogic.cjs - FULL CJS VERSION (NO import/export)
+require("dotenv/config");
+const TelegramBot = require("node-telegram-bot-api");
+const { describeImageEducational } = require("./vision.cjs");
+const path = require("path");
+const fetch = require("node-fetch");
+const fs = require("fs");
+const { buildReportText, reportTextToStream } = require("./reportFile.cjs");
 
-import { Pinecone } from "@pinecone-database/pinecone";
-import { PineconeStore } from "@langchain/pinecone";
-import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
-import { ChatGroq } from "@langchain/groq";
+const { Pinecone } = require("@pinecone-database/pinecone");
+const { PineconeStore } = require("@langchain/pinecone");
+const { GoogleGenerativeAIEmbeddings } = require("@langchain/google-genai");
+const { ChatGroq } = require("@langchain/groq");
 
 /* -------------------- ENV CHECKS -------------------- */
-
 const token = process.env.TELEGRAM_BOT_TOKEN;
 if (!token) throw new Error("Add TELEGRAM_BOT_TOKEN to .env from @BotFather");
 
@@ -25,7 +24,6 @@ if (!process.env.PINECONE_INDEX)
   throw new Error("Add PINECONE_INDEX=Medisage-index to .env");
 
 /* -------------------- PINECONE + VECTOR STORE -------------------- */
-
 const embeddings = new GoogleGenerativeAIEmbeddings({
   model: "text-embedding-004",
 });
@@ -211,7 +209,7 @@ function handleGreetings(text) {
   return null; // not a greeting
 }
 
-export function createBot() {
+function createBot() {
   // note: polling: false – runner will decide
   const bot = new TelegramBot(token, { polling: false });
 
@@ -493,8 +491,4 @@ export function createBot() {
 
   return bot;
 }
-// module.exports = { createBot };
-// CJS export for Vercel webhook
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { createBot };
-}
+module.exports = { createBot };
